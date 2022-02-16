@@ -169,6 +169,7 @@ type stmnt =
     | Ass of string * aExp (* variable assignment *)
     | Seq of stmnt * stmnt (* sequential composition *)
     | ITE of bExp * stmnt * stmnt (* if-then-else statement *)
+    | IT of bExp * stmnt (* if-then-else statement *)
     | While of bExp * stmnt (* while statement *)
 
 let rec evalStmnt (stm:stmnt) (w:word) (s:Map<string,int>) =
@@ -177,6 +178,7 @@ let rec evalStmnt (stm:stmnt) (w:word) (s:Map<string,int>) =
     | Ass (x, a) -> s.Add(x, arithEval a w s)
     | Seq (stm1, stm2) -> evalStmnt stm2 w (evalStmnt stm1 w s)
     | ITE (guard, stm1, stm2) -> if boolEval guard w s then evalStmnt stm1 w s else evalStmnt stm2 w s
+    | IT (guard, stm) -> evalStmnt (ITE (guard, stm, Skip)) w s
     | While (guard, stm) -> if (boolEval guard w s) then evalStmnt (While (guard, stm)) w (evalStmnt stm w s) else s
 (*
 evalStmnt Skip [] Map.empty;;
@@ -189,5 +191,87 @@ evalStmnt (While (V "x" .<=. WL, Seq (Ass ("y", V "y" .+. V "x"), Ass ("x", V "x
 *)
 
 //3.8
-//let stmntToSquareFun (stm:stmnt) =
-    
+let stmntToSquareFun (stm:stmnt) = fun (w:word) pos acc -> Map.find "_result_" (evalStmnt stm w (evalStmnt (Seq (Ass ("_pos_", N pos), Ass ("_acc_", N acc))) w Map.empty))
+
+let singleLetterScore = stmntToSquareFun (Ass ("_result_", arithSingleLetterScore))
+let doubleLetterScore = stmntToSquareFun (Ass ("_result_", arithDoubleLetterScore))
+let tripleLetterScore = stmntToSquareFun (Ass ("_result_", arithTripleLetterScore))
+let doubleWordScore = stmntToSquareFun (Ass ("_result_", arithDoubleWordScore))
+let tripleWordScore = stmntToSquareFun (Ass ("_result_", arithTripleWordScore))
+
+let containsNumbers = 
+  stmntToSquareFun 
+    (Seq (Ass ("_result_", V "_acc_"),
+          While (V "i" .<. WL,
+                 ITE (IsDigit (CV (V "i")),
+                      Seq (
+                           Ass ("_result_", V "_result_" .*. N -1),
+                           Ass ("i", WL)),
+                      Ass ("i", V "i" .+. N 1)))))
+(*
+    singleLetterScore hello 0 0;;
+
+    doubleLetterScore hello 0 0;;
+
+    tripleLetterScore hello 0 0;;
+
+    singleLetterScore hello 0 42;;
+
+    doubleLetterScore hello 0 42;;
+
+    tripleLetterScore hello 0 42;;
+
+    containsNumbers hello 5 50;;
+
+    containsNumbers (('0', 100)::hello) 5 50;;
+
+    containsNumbers (hello @ [('0', 100)]) 5 50;;
+*)
+
+//3.9
+let oddConsonants = 
+                    (Seq (
+                        Ass ("isOdd", N 1),
+                        (Seq (While (V "i" .<. WL, Seq ( 
+                                        IT (IsVowel (CV (V "i")),
+                                            ITE (AEq (V "isOdd", N 1), Ass ("isOdd", N 0), Ass ("isOdd", N 1))
+                                        ),
+                                        Ass ("i", V "i" .+. N 1)
+                                    )
+                                ), (
+                                    ITE (AEq (V "isOdd", N 1), Ass ("_result_", (V "_acc_" .*. N -1)),  Ass ("_result_", V "_acc_"))
+                                )
+                        ))))
+
+
+(*
+let helll = [('H', 4);('E', 1);('L', 1);('L', 1);('L', 1)]
+stmntToSquareFun oddConsonants hello 5 50;;
+stmntToSquareFun oddConsonants hello 0 50;;
+stmntToSquareFun oddConsonants helll 0 50;;
+*)
+
+// 3.10
+
+type square = (int * squareFun) list
+type square2 = (int * stmnt) list
+
+let SLS = [(0, Ass ("_result_", arithSingleLetterScore))]
+let DLS = [(0, Ass ("_result_", arithDoubleLetterScore))]
+let TLS = [(0, Ass ("_result_", arithTripleLetterScore))]
+let DWS = [(1, Ass ("_result_", arithDoubleWordScore))] @ SLS
+let TWS = [(1, Ass ("_result_", arithTripleWordScore))] @ SLS
+
+let calculatePoints squares word : int =
+    List.mapi (fun i square -> List.map (fun (p, sf) -> (p, sf word i)) square) squares |>
+    List.fold (fun square acc -> square@acc) [] |> 
+    List.sortBy (fun sqaure -> fst sqaure) |> 
+    List.map (fun (_,x) -> x) |>
+    List.fold (fun acc item -> item acc) 0
+
+let calculatePoints2 squares word : int = calculatePoints (List.map (fun s -> List.map (fun (int, stmnt) -> (int, stmntToSquareFun stmnt)) s) squares) word
+
+(*
+calculatePoints2 [DLS; SLS; TLS; SLS; DWS] hello;;
+calculatePoints2 [DLS; DWS; TLS; TWS; DWS] hello;;
+*)
