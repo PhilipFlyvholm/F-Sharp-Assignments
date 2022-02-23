@@ -162,11 +162,12 @@ tripleWordScore hello 12345 42
 open System
 let isConsonant (c: char) = "BCDFGHJKLMNPQRSTVWXYZ".Contains(Char.ToUpper(c))
 
-let oddConsonants (w:word) pos acc = 
+let oddConsonants (w:word) _ acc = 
     let amount = List.foldBack (fun (w:(char*int)) s -> if isConsonant (fst w) then (s+1) else s ) w 0
     if amount % 2 <> 0 then -acc else acc
 (*
 oddConsonants hello 0 50
+oddConsonants hello 5 50;;
 *)
 
 type square = (int * squareFun) list
