@@ -42,13 +42,13 @@
         </Reference>
     </ItemGroup>
     <ItemGroup>
+        <Compile Include="Dictionary.fsi" />
+        <Compile Include="Dictionary.fs" />
         <Compile Include="MultiSet.fsi" />
         <Compile Include="MultiSet.fs" />
         <Compile Include="AssemblyInfo.fs" />
         <Compile Include="Program.fs" />
         <Content Include="packages.config" />
-        <Compile Include="Dictionary.fsi" />
-        <Compile Include="Dictionary.fs" />
     </ItemGroup>
     <Import Project="$(FSharpTargetsPath)" Condition="Exists('$(FSharpTargetsPath)')" />
 </Project>

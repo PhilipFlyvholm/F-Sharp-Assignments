@@ -1,7 +1,7 @@
-module Assignment4.Dictionary
+module Dictionary
 
-type Dictionary
+type Dict
 
-val empty : unit -> Dictionary
-val insert : string -> Dictionary -> Dictionary
-val step : char -> Dictionary -> (bool * Dictionary) option
+val empty : unit -> Dict
+val insert : string -> Dict -> Dict
+val lookup : string -> Dict -> bool 
