@@ -37,34 +37,45 @@
     let pletter        = satisfy System.Char.IsLetter
     let palphanumeric  = satisfy System.Char.IsLetterOrDigit
 
-    let spaces         = pstring "not implemented"
-    let spaces1        = pstring "not implemented"
+    let spaces         = many (pstring " ")
+    let spaces1        = many1 (pstring " ")
 
-    let (.>*>.) _ _ = failwith "not implemented"
-    let (.>*>) _ _  = failwith "not implemented"
-    let (>*>.) _ _  = failwith "not implemented"
+    let (.>*>.) p1 p2 = p1 .>> spaces .>>. p2
+    let (.>*>) p1 p2  = p1 .>> spaces .>> p2
+    let (>*>.) p1 p2  = p1 >>. spaces >>. p2
 
-    let parenthesise p = p // incorrect (not implemented)
+    let parenthesise p = (pchar '(') >*>. p .>*> (pchar ')')
 
-    let pid = pstring "not implemented"
-
+    let convertCharListToString (a: char list) = System.String.Concat(a)
     
-    let unop _ = failwith "not implemented"
-    let binop _ p1 p2 = p1 .>>. p2 // incorrect (not implemented)
+    let pid = (pchar '_') <|> pletter .>>. many (palphanumeric <|> pchar '_') |>>
+              (fun (first, rest) -> convertCharListToString (first::rest))
+
+    let unop op = fun a -> op >*>. a
+    let binop op p1 p2 = p1 .>*> op .>*>. p2
 
     let TermParse, tref = createParserForwardedToRef<aExp>()
     let ProdParse, pref = createParserForwardedToRef<aExp>()
     let AtomParse, aref = createParserForwardedToRef<aExp>()
 
     let AddParse = binop (pchar '+') ProdParse TermParse |>> Add <?> "Add"
-    do tref := choice [AddParse; ProdParse]
+    let SubParse = binop (pchar '-') ProdParse TermParse |>> Sub <?> "Sub"
+    do tref := choice [AddParse; SubParse; ProdParse]
 
     let MulParse = binop (pchar '*') AtomParse ProdParse |>> Mul <?> "Mul"
-    do pref := choice [MulParse; AtomParse]
+    let DivParse = binop (pchar '/') AtomParse ProdParse |>> Div <?> "Div"
+    let ModParse = binop (pchar '%') AtomParse ProdParse |>> Mod <?> "Mod"
+    do pref := choice [MulParse;DivParse;ModParse; AtomParse]
 
     let NParse   = pint32 |>> N <?> "Int"
     let ParParse = parenthesise TermParse
-    do aref := choice [NParse; ParParse]
+    let PointValueParse = unop (pstring "pointValue") AtomParse |>> PV <?> "Pointvalue"
+    let VariablesParse = pid |>> V <?> "Variable"
+    let NegParse = unop (pchar '-') AtomParse |>> (fun a -> (N -1, a)) |>> Mul <?> "Neg"
+    
+    let CharToIntParse = unop (pstring "ChatToInt") ParParse |>> (fun a -> int(unop (a))) |>> CharToInt 
+    
+    do aref := choice [NParse; ParParse;PointValueParse;VariablesParse;NegParse]
 
     let AexpParse = TermParse 
 
