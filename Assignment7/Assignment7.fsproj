@@ -15,6 +15,7 @@
     <Compile Include="JParsec.fs" />
     <Compile Include="Parser.fs" />
     <Compile Include="Program.fs" />
+    <Content Include="Assignment 7.pdf" />
   </ItemGroup>
 
   <ItemGroup>

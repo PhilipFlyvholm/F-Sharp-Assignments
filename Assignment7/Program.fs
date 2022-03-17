@@ -1,6 +1,7 @@
 ﻿// Learn more about F# at http://fsharp.org
 // See the 'F# Tutorial' project for more help.
 
+open Eval
 open JParsec.TextParser
 //open FParsecLight.TextParser
 open ImpParser
@@ -118,12 +119,32 @@ let main argv =
 
 
     printfn "\n\nTesting 7.9\n"
-
+    printfn "7.9.1 - Should Pass"
+    run AexpParse "charToInt (' ')"                        |> printfn "%A"
+    printfn "7.9.2 - Should Pass"
+    run AexpParse "charToInt ('H')"                        |> printfn "%A"
+    printfn "7.9.3 - Should Pass"
     run CexpParse "'x'"                                    |> printfn "%A"
+    printfn "7.9.4.1 - Should Pass"
+    run CexpParse "toLower ('x')"                          |> printfn "%A"
+    printfn "7.9.4 - Should Pass"
     run CexpParse "toLower (toUpper( 'x'))"                |> printfn "%A"
+    printfn "7.9.5 - Should Fail"
     run CexpParse "toLower (toUpper 'x')"                  |> printfn "%A"
+    printfn "7.9.6 - Should Pass"
     run CexpParse "intToChar (charToInt (' '))"            |> printfn "%A"
+    printfn "7.9.6.1 - Should Pass"
+    run CexpParse "intToChar (5)"            |> printfn "%A"
+    printfn "7.9.6.2 - Should Pass"
+    run AexpParse "charToInt (' ')"            |> printfn "%A"
+    printfn "7.9.7 - Should Pass"
     run AexpParse "charToInt (charValue (pointValue (5)))" |> printfn "%A"
+    printfn "7.9.7.1 - Should Pass"
+    run AexpParse "pointValue (5)" |> printfn "%A"
+    printfn "7.9.7.2 - Should Pass"
+    run CexpParse "charValue (pointValue (5))" |> printfn "%A"
+    printfn "7.9.7.3 - Should Pass"
+    run CexpParse "charValue (5)" |> printfn "%A"
 
 
     printfn "\n\nTesting 7.10\n"
@@ -134,6 +155,10 @@ let main argv =
     run BexpParse "~false"                      |> printfn "%A"
     run BexpParse "(5 < 4 /\ 6 <= 3) \/ ~false" |> printfn "%A"
     run BexpParse "(5 < 4 \/ 6 <= 3) \/ ~true"  |> printfn "%A"
+    run BexpParse "isLetter ('a')"  |> printfn "%A"
+    run BexpParse "isVowel ('a')"  |> printfn "%A"
+    run BexpParse "isDigit ('a')"  |> printfn "%A"
+    run BexpParse "isDigit ('5')"  |> printfn "%A"
 
     printfn "\n\nTesting 7.11\n"
 
@@ -146,6 +171,12 @@ let main argv =
     run stmntParse "if (x < y) then { x := 5 }" |> printfn "%A"
     run stmntParse "while (true) do {x5 := 0} " |> printfn "%A"
 
+    let factorial1 = 
+        "declare arg;
+        arg := 10"
+    
+    run stmntParse factorial1 |> printfn "%A"
+    
     let factorial = 
         "declare arg;
          arg := 10;
@@ -162,7 +193,7 @@ let main argv =
          }"
     
     run stmntParse factorial |> printfn "%A"
-
+(*
     printfn "\n\nTesting 7.12\n"
 
     (parseSquareProg tripleWordScore |> Map.find 0) Eval.hello 0 0 |> printfn "%A"
@@ -206,5 +237,5 @@ let main argv =
                           Option.defaultValue "#")
         printfn ""
 
-
+*)
     0 // return an integer exit code
