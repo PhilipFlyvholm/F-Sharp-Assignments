@@ -9,8 +9,8 @@
 
     *)
 
-    open JParsec.TextParser             // Example parser combinator library. Use for CodeJudge.
-    // open FParsecLight.TextParser     // Industrial parser-combinator library. Use for Scrabble Project.
+    //open JParsec.TextParser             // Example parser combinator library. Use for CodeJudge.
+    open FParsecLight.TextParser     // Industrial parser-combinator library. Use for Scrabble Project.
     
     let pIntToChar  = pstring "intToChar"
     let pPointValue = pstring "pointValue"
@@ -148,7 +148,7 @@
     type word   = (char * int) list
     type square = Map<int, squareFun>
 
-    let parseSquareProg _ = failwith "not implemented"
+    let parseSquareProg sqp = failwith "not implemented"
 
     let parseBoardProg _ = failwith "not implemented"
 

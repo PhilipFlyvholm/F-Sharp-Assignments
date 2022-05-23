@@ -2,8 +2,8 @@
 // See the 'F# Tutorial' project for more help.
 
 open Eval
-open JParsec.TextParser
-//open FParsecLight.TextParser
+//open JParsec.TextParser
+open FParsecLight.TextParser
 open ImpParser
 let singleLetterScore = Map.add 0 "_result_ := pointValue(_pos_) + _acc_" Map.empty
 let doubleLetterScore = Map.add 0 "_result_ := pointValue(_pos_) * 2 + _acc_" Map.empty

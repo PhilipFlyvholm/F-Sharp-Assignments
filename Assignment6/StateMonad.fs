@@ -69,7 +69,7 @@
               | Some v -> Success (v, s)
               | None   -> Failure (VarNotFound x))
 
-    let declare (var : string) : SM<unit> = failwith "Not implemented"   
+    let declare (var : string) : SM<unit> = failwith "not implemented";
     let update (var : string) (value : int) : SM<unit> =
         let rec aux (s: Map<string,int> list) (i: int): Map<string,int> list -> (Map<String, int> list) Option =
             function
