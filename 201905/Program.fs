@@ -1,0 +1,22 @@
+﻿open Question1
+open Question2
+printfn "Question 1"
+add  (S (S O)) (S (S (S O))) |> toInt |> printfn "%A = 5"
+mult (S (S O)) (S (S (S O))) |> toInt |> printfn "%A = 6"
+pow  (S (S O)) (S (S (S O))) |> toInt |> printfn "%A = 8"    
+tailAdd  (S (S O)) (S (S (S O))) |> toInt |> printfn "%A = 5"
+tailMult (S (S O)) (S (S (S O))) |> toInt |> printfn "%A = 6"
+tailPow  (S (S O)) (S (S (S O))) |> toInt |> printfn "%A = 8"
+loop not true O |> printfn "%A = true"
+loop not true (S (S (S O))) |> printfn "%A = false"
+loop not true (S (S (S (S (S (S (S (S O)))))))) |> printfn "%A = true"
+loopAdd  (S (S O)) (S (S (S O))) |> toInt |> printfn "%A = 5"
+loopMult (S (S O)) (S (S (S O))) |> toInt |> printfn "%A = 6"
+loopPow  (S (S O)) (S (S (S O))) |> toInt |> printfn "%A = 8"
+
+f 5 [1;4;5;7;2] |> printfn "%A"
+f 50 [1;4;5;7;2] |> printfn "%A"
+g [1;4;5;7;2] [1;4;5;7;2] |> printfn "%A"
+g [1] [1;2] |> printfn "%A"
+g [1] [1;1] |> printfn "%A"
+g [1;1] [1] |> printfn "%A"
