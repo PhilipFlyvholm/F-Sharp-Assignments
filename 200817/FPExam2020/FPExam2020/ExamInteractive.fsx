@@ -9,3 +9,13 @@
 
 #load "Exam.fs"
 open Exam2020_2;;
+
+let fib x =
+         let rec aux acc1 acc2 =
+             function
+             | 0 -> acc1
+             | x -> aux acc2 (acc1 + acc2) (x - 1)
+         aux 0 1 x
+let fibll1 = init fib
+let fibll2 = unfold (fun (acc1, acc2) -> (acc1, (acc2, acc1 + acc2))) (0, 1)
+let fibll3 = unfold (fun (acc1, acc2) -> (acc1, (acc2, add acc1 acc2))) ([0], [1])

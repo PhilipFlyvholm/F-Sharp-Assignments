@@ -256,33 +256,79 @@ module Exam2020_2
         let longLength = List.length longBoi
         
         let rec aux overflow (i:int) (acc:bigInt) =
-            match List.tryItem (smallLength - i) smallBoi with
-            | None -> acc
+            match List.tryItem (longLength - i) longBoi with
+            | None -> if overflow > 0 then (overflow::acc) else acc
             | Some x ->
-                match List.tryItem (longLength - i) longBoi with
-                | None ->
-                    let r = overflow+x
-                    match r with
-                    | r when r >= 10 -> aux (r/10) (i + 1) ((r%10)::acc)
-                    | r-> aux 0 (i + 1) (r::acc)
-                | Some y ->
-                    let r = x+y+overflow
-                    match r with
-                    | r when r >= 10 -> aux (r/10) (i + 1) ((r%10)::acc)
-                    | r-> aux 0 (i + 1) (r::acc)
+                let r = match List.tryItem (smallLength - i) smallBoi with
+                        | None ->
+                            x+overflow
+                        | Some y ->
+                            x+y+overflow
+                match r with
+                | r when r >= 10 -> aux (r/10) (i + 1) ((r%10)::acc)
+                | r-> aux 0 (i + 1) (r::acc)
         aux 0 1 []
 
-(* Question 3.3 *)
-
-    let multSingle _ = failwith "not implemented"
-
+    let rec removeHeadZero (bigInt:bigInt) =
+        match bigInt with
+        | [] -> [0]
+        | head::tail when head = 0 -> removeHeadZero tail
+        | _ -> bigInt
+    
+    (* Question 3.3 *)   
+    (*let multSingle (bigInt:bigInt) (multiplier:int) =
+        let mutable i = 0
+        List.foldBack (
+            fun n acc ->
+                let list = [for _ in 1..i -> 0]
+                let r =
+                    match (n*multiplier) with
+                    | r when r >= 10 -> [r/10; r%10]
+                    | r -> [r]
+                    @ list
+                i <- i + 1
+                add r acc
+        ) bigInt []
+        |> removeHeadZero*)
+    let multSingle (a: bigInt) (b: int) =
+        if a = [0] || b = 0 then [0]
+        else
+            
+        let rec aux i acc =
+            match i with
+            | _ when i = b -> acc
+            | i' -> aux (i' + 1) (add a acc)
+        aux 0 [0]
 (* Question 3.4 *)
 
-    let mult _ = failwith "not implemented"
+    let mult (bigInt:bigInt) (multiplier:bigInt) =
+        let mutable i = 0
+        List.foldBack (
+            fun bigN acc ->
+                let r =multSingle bigInt bigN @ [for _ in 1..i -> 0]
+                i <- i + 1
+                add r acc
+        ) multiplier []
+        |> removeHeadZero
 
 (* Question 3.5 *)
 
-    let fact _ = failwith "not implemented"
+    let intToBigInt x =  fromString <| string x
+    
+    let fact x numThreads : bigInt=
+        match x with
+        | 0 -> [1]
+        | x ->
+            let amountPerThead = x/numThreads
+            [for i in 0..numThreads-1 ->  
+                async {
+                    return List.fold mult [1] [for j in 1..amountPerThead -> j+(i*amountPerThead) |> intToBigInt]
+                }
+            ]
+            |> Async.Parallel
+            |> Async.RunSynchronously
+            |> Array.fold mult [1]
+            
 
 (* 4: Lazy lists *)
 
@@ -293,28 +339,56 @@ module Exam2020_2
 
 (* Question 4.1 *)
 
-    let step _ = failwith "not implemented"
-    let cons _ = failwith "not implemented"
+    let step (Cons (llist): 'a llist) = llist ()
+        
+    let cons x (llist: 'a llist) = Cons (fun () -> (x, llist))
 
 (* Question 4.2 *)
 
-    let init _ = failwith "not implemented"
+    let init (f:int->'b) =
+        let rec aux i =
+            Cons (fun () -> (f i, aux (i + 1)))
+        aux 0
 
 (* Question 4.3 *)
 
-    let llmap _ = failwith "not implemented"
+    let llmap (f:'a->'b) (llist: 'a llist) =
+        let rec aux (llist: 'a llist) =
+            let v, l = step llist
+            Cons (fun () -> f v, aux l)
+        aux (llist: 'a llist)
 
 (* Question 4.4 *)
 
-    let filter _ = failwith "not implemented"
+    let filter (f:'a->bool) (llist: 'a llist) =
+        let rec aux (llist: 'a llist) =
+            let v, l = step llist
+            if f v then 
+                Cons (fun () -> v, aux l)
+            else aux l
+        aux llist
 
 (* Question 4.5 *)
 
-    let takeFirst _ = failwith "not implemented"
-
+    let takeFirst num (llist: 'a llist) : ('a list * 'a llist) =
+        let rec aux num (llist: 'a llist) (acc, accllist) =
+            match num with
+            | 0 -> (acc, accllist)
+            | num ->
+                let v, l = step llist
+                aux (num - 1) l ((v::acc),l)
+        aux num llist ([], llist) |>
+        fun (l, llist) -> (List.rev l, llist)
+            
+            
 (* Question 4.6 *)
 
-    let unfold _ = failwith "not implemented"
+    let unfold (generator:'state -> ('a * 'state)) (st:'state) : 'a llist =
+        let rec aux st =
+            Cons (fun () ->
+                let st, st' = generator st
+                (st, aux st'))
+        aux st
 
     (* Consider the following two implementations of Fibonacci sequences fibll1 and fibll2: *)
 
