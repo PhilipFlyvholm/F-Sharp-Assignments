@@ -73,7 +73,7 @@
 
 (* 2: Code Comprehension *)
     let rec foo x = 
-        function 
+        function
         | y :: ys when x = y -> ys
         | y :: ys            -> y :: (foo x ys)
 
@@ -81,7 +81,7 @@
         function
         | []        -> []
         | xs :: xss -> (x :: xs) :: bar x xss 
-
+    
     let rec baz =
         function
         | [] -> []
@@ -99,19 +99,28 @@
     
     Q: What are the types of functions foo,  bar, and baz?
 
-    A: <Your answer goes here>
+    A: 
+        Foo: 'a -> 'a list -> 'a list
+        Bar: 'a -> 'a list list -> 'a list list
+        Baz: 'a list -> 'a list list
 
 
     Q: What do functions foo, bar, and baz do? 
        Focus on what they do rather than how they do it.
 
-    A: <Your answer goes here>
+    A: 
+        Foo: Removes the first instance of x
+        Bar: Adds x to all sublists
+        Baz: Lists all combinations of the list given
 
 
     Q: What would be appropriate names for functions 
        foo, bar, and baz?
 
-    A: <Your answer goes here>
+    A: 
+        Foo: RemoveFirst
+        Bar: AppendToAll
+        Baz: GetCombinations
     
     *)
         
@@ -126,18 +135,22 @@
     
     Q: Why does this happen, and where? 
 
-    A: <Your answer goes here>
+    A: This happens since it is missing a match on an empty list in the function pattern match on ys
 
 
     Q: For these particular three functions will this incomplete 
        pattern match ever cause problems for any possible execution of baz? 
        If yes, why; if no, why not.
 
-    A: <Your answer goes here>
+    A: No it will never cause problems since
 
     *)
 
-    let foo2 _ = failwith "not implemented"
+    let foo2 x = 
+        function
+        | [] -> []
+        | y :: ys when x = y -> ys
+        | y :: ys            -> y :: (foo x ys)
 
 (* Question 2.3 *) 
 
@@ -146,53 +159,115 @@
 
     Q: What is the type of this expression
 
-    A: <Your answer goes here>
+    A: 'a -> (list<'a> -> list<list<'a>>)
 
 
     Q: What does it do? Focus on what it does rather than how it does it.
 
-    A: <Your answer goes here>
-
+    A: It sends the result of foo to baz and the result of baz to bar
     *)
 
 (* Question 2.4 *)
 
-    let bar2 _ = failwith "not implemented"
+    let bar2 x xss = List.map (fun xs -> x::xs) xss
 
 (* Question 2.5 *)
 
-    let baz2 _ = failwith "not implemented"
+    let baz2 =
+        function
+        | [] -> []
+        | [x] -> [[x]]
+        | xs  -> 
+            (*let rec aux =
+                function
+                | []      -> []
+                | y :: ys -> ((foo y >> baz >> bar y) xs) @ (aux ys)
+            aux xs*)
+            List.collect (fun x -> (foo x >> baz >> bar x) xs) xs
 
 (* Question 2.6 *)
 
     (*
-    
+     let foo2 x = 
+        function
+        | [] -> []
+        | y :: ys when x = y -> ys
+        | y :: ys            -> y :: (foo x ys)
+        
     Q: The function foo is not tail recursive. Why?
     
-    A: <Your answer goes here>
-
+    A: 
+    Foo is not tail recusive since it calls "y :: (foo x ys)" which means that (foo x ys) needs to finish running before it can concatenate it with y
+    foo 5 [1;4;5;3]
+    1 :: (foo 5 [4;5;3])
+    1 :: (4 :: (foo 5 [5;3]))
+    1 :: (4 :: [3])
+    1 :: [4;3]
+    [1;4;3]
+    As seen above then it needs to go through the list before it can start concatinating the result
     *)
 
-    let fooTail _ = failwith "not implemented"
+    let fooTail x l =
+        let rec aux f =
+            function
+            | [] -> f []
+            | y::ys when x = y -> f ys
+            | y::ys -> aux (fun r -> f <| y::r) ys
+        aux id l
 
 (* 3: Rock Paper Scissors *)
 
 (* Question 3.1 *)
 
-    type shape = unit (* replace unit with the correct type declaration *)
-    type result = unit (* replace unit with the correct type declaration *)
-
-    let rps _ = failwith "not implemented"
-
+    type shape =
+        | ROCK
+        | PAPER
+        | SCISSOR
+    type result =
+        | P1Win
+        | P2Win
+        | Draw
+        
+    let rps (p1Play:shape) (p2Play:shape) =
+        match p1Play, p2Play with
+        | ROCK, ROCK | PAPER, PAPER | SCISSOR, SCISSOR -> Draw
+        | PAPER, ROCK | ROCK, SCISSOR | SCISSOR, PAPER -> P1Win
+        | ROCK, PAPER | SCISSOR, ROCK | PAPER, SCISSOR -> P2Win
 (* Question 3.2 *)
 
     type strategy = (shape * shape) list -> shape
 
-    let parrot _ = failwith "not implemented"
+    let parrot (defaultPlay:shape) =
+        function
+        | [] -> defaultPlay
+        | move::_ -> snd move
     
-    let beatingStrat _ = failwith "not implemented"
+    let beatingStrat =
+        function
+        | [] -> ROCK
+        | moves ->
+            let stats = List.countBy snd moves
+            let max = List.maxBy snd stats
+            let maxList = List.filter (fun t -> t = max) stats
+            match List.tryFind (fun (shape, _) -> shape = ROCK) stats with
+            | Some _ -> PAPER
+            | None -> match List.tryFind (fun (shape, _) -> shape = PAPER) stats with
+                        | Some _ -> SCISSOR
+                        | None -> match List.tryFind (fun (shape, _) -> shape = SCISSOR) stats with
+                                    | Some _ -> ROCK
+                                    | None -> List.head stats |> fst
 
-    let roundRobin _ = failwith "not implemented"
+    let roundRobin defaultShapes =
+        let mutable shapes = defaultShapes
+        let rec aux () =
+            match shapes with
+            | [] ->
+                shapes <- defaultShapes
+                aux ()
+            | shape::shapes' ->
+                shapes <- shapes'
+                shape
+        fun _ -> aux ()
 
 (* Question 3.3 *)
 
@@ -202,23 +277,70 @@
        point tuple after n rounds and then use Seq.initInfinite to 
        generate the sequence. This is not a good solution. Why?
 
-    A: <Your answer goes here>
+    A: InitInfinite needs to calculate all previous entries to calculate the nth entry
     
     *)
 
-    let bestOutOf _ = failwith "not implemented"
+    let bestOutOf (p1Strat:strategy) (p2Strat:strategy) =
+        Seq.unfold (fun (p1Moves, p2Moves, p1Wins, p2Wins) ->
+                    let p1Play = p1Strat p1Moves
+                    let p2Play = p2Strat p2Moves
+                    let (p1Wins', p2Wins') =
+                        match rps p1Play p2Play with
+                        | P1Win -> (p1Wins+1, p2Wins)
+                        | P2Win -> (p1Wins, p2Wins+1)
+                        | Draw -> (p1Wins, p2Wins)
+                    let p1Moves' = (p1Play,p2Play)::p1Moves
+                    let p2Moves' = (p2Play,p1Play)::p2Moves
+                    Some ((p1Wins', p2Wins'), (p1Moves', p2Moves', p1Wins', p2Wins'))
+                   ) ([], [], 0, 0)
+        |> Seq.append (Seq.singleton (0,0))
 
 (* Question 3.4 *)
 
-    let playTournament _ = failwith "not implemented"
+    let playTournament numRounds (players:strategy list) =
+        let rec play players =
+            match players with
+            | [] -> None
+            | [(points, id)] -> Some id
+            | players ->
+                List.fold (fun acc p ->
+                            match acc with
+                            | (Some p1, None)::xs -> (Some p1, Some p)::xs
+                            | (Some _, Some _)::xs -> (Some p, None)::acc
+                            | _ -> [(Some p, None)]
+                        ) [] players
+                |> List.map (fun game ->
+                        async {
+                            return match game with
+                                    | (Some p1, None) -> Some p1 
+                                    | (Some (p1Strat, p1Id), Some (p2Strat, p2Id)) ->
+                                        match bestOutOf p1Strat p2Strat |> Seq.item numRounds with
+                                        | (p1Wins, p2Wins) when p1Wins = p2Wins -> None
+                                        | (p1Wins, p2Wins) when p1Wins > p2Wins ->
+                                            Some(p1Strat, p1Id)
+                                        | _ ->
+                                            Some(p2Strat, p2Id)
+                                    | _ -> None
+                        }
+                    )
+                |> Async.Parallel
+                |> Async.RunSynchronously
+                |> Array.filter Option.isSome
+                |> Array.map Option.get
+                |> List.ofArray//Converts to list from array and also gets the values in the option
+                |> play
+        play <| List.mapi (fun i x -> (x, i)) players
+            
+        
 
 (* 4: Revers Polish Notation *)
 
 (* Question 4.1 *)
 
-    type stack = unit (* replace unit with the correct type declaration *)
+    type stack = int list (* replace unit with the correct type declaration *)
 
-    let emptyStack = () (* replace () with the correct value *)
+    let emptyStack = [] (* replace () with the correct value *)
 
 (* Question 4.2 *)
 
@@ -239,8 +361,12 @@
 
     let evalSM (S f) = f emptyStack 
 
-    let push _ = failwith "not implemented"
-    let pop _ = failwith "not implemented"
+    let push x = S (fun s -> Some ((), x::s))
+    let pop = S (fun s ->
+                    match s with
+                    | [] -> None
+                    | x::xs -> Some (x, xs)
+                )
 
 (* Question 4.3 *)
 
@@ -264,7 +390,7 @@
        S (fun s -> Some (aux [], s)) and not ret (aux []). 
        What is the problem with using ret in both of these cases?
     
-    A: <Your answer goes here>
+    A: We want to decide when to print since printf has side effects of writing to the console
     
     *)
 
@@ -281,5 +407,17 @@
         member this.Combine(a, b) = a >>= (fun _ -> b)
 
     let state = new StateBuilder()
-
-    let calculateRPN _ = failwith "not implemented"
+    let isInt (str : string) : bool = System.Int32.TryParse str |> fst
+    let binop op = pop >>= (fun x1 -> pop >>= (fun x2 -> op x2 x1 |> push))
+    let calculateRPN () =
+        let rec aux () =
+            read >>= (fun s ->
+                    match s with
+                    | Some "+" -> binop (+) >>>= aux ()
+                    | Some "-" -> binop (-) >>>= aux ()
+                    | Some "*" -> binop (*) >>>= aux ()
+                    | Some str when isInt str -> push (int str) >>>= aux ()
+                    | Some _ -> fail
+                    | None -> pop >>= fun x -> string x |> write
+                )
+        aux ()
