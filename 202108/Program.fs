@@ -38,7 +38,12 @@ fold (+)
      0 
      (Cons1 (3, Cons2 (true, Cons1 (4, Cons2 (false, Cons2(true, Nil)))))) |> printfn "-7 = %A"
      
+
 open _202108.Question2
+printfn "Question 2"
+
+     
+open _202108.Question3
 findClosestPerfectSquare 5 |> printfn "4 = %A"
 
 approxSquare 5 0 |> printfn "2.0 = %A"
@@ -67,4 +72,69 @@ quadratic 5 (-3) (-1) 3 |> printfn "(0.8385164807, -0.2385164807) = %A"
    (1.841170631, -0.6983134882); (1.814061525, -0.6890615247);
    (1.792836525, -0.681725414); (1.775765067, -0.6757650672)]
    =
-   %A" 
+   %A"
+   
+printfn "Question 3.4"
+solveQuadratic "-4x^2 - 5x + 6 = 0" 5 |> printfn "(-2.0, 0.75) = %A"
+
+solveQuadratic "-4x^2    -  5x+ 6=    0" 5 |> printfn "(-2.0, 0.75) = %A"
+
+solveQuadratic "-4x^2-5x+6=0" 5 |> printfn "(-2.0, 0.75) = %A"
+
+//solveQuadratic "-4x^3 - 5x + 6 = 0" 5 |> printfn "FAIL = %A"
+
+//solveQuadratic "-4x^2 - 5x + 6 = 0 Hello World" 5 |> printfn "FAIL = %A"
+
+
+open _202108.Question4
+printfn "Question 4.2"
+
+mkRat 5 6 |> Option.get |> ratToString |> printfn "5 / 6 = %A"
+
+mkRat 15 10 |> Option.get |> ratToString|> printfn "3 / 2 = %A"
+
+mkRat -15 10 |> Option.get |> ratToString|> printfn "-3 / 2 = %A"
+
+mkRat 15 -10 |> Option.get |> ratToString|> printfn "-3 / 2 = %A"
+
+mkRat -15 -10 |> Option.get |> ratToString|> printfn "3 / 2 = %A"
+
+mkRat 0 5 |> Option.get |> ratToString|> printfn "0 / 1 = %A"
+
+mkRat 5 0 |> printfn "None = %A"
+
+printfn "Question 4.3"
+let r1 = mkRat 2 3 |> Option.get
+let r2 = mkRat 3 4 |> Option.get
+
+plus r1 r2 |> Option.get |> ratToString |> printfn "17 / 12 = %A"
+
+minus r1 r2 |> Option.get |> ratToString |> printfn "-1 / 12 = %A"
+
+minus r2 r2 |> Option.get |> ratToString |> printfn "0 / 1 = %A"
+
+mult r1 r2 |> Option.get |> ratToString |> printfn "1 /2 = %A"
+
+div r1 r2 |> Option.get |> ratToString |> printfn "8 / 9 = %A"
+
+div r1 (minus r2 r2 |> Option.get)  |> printfn "None = %A"
+
+let r1' = mkRat 2 3 |> Option.get
+let r2' = mkRat 3 4 |> Option.get
+
+r1' |> evalSM (smPlus r2') |> Option.get |> snd |> ratToString  |> printfn "17 / 12 = %A"
+
+r1' |> evalSM (smMinus r2') |> Option.get |> snd |> ratToString |> printfn "-1 / 12 = %A"
+
+r1' |> evalSM (smMult r2') |> Option.get |> snd |> ratToString |> printfn "1 / 2 = %A"
+
+r1' |> evalSM (smDiv r2') |> Option.get |> snd |> ratToString |> printfn "8 / 9 = %A"
+
+let r1'' = mkRat 2 3 |> Option.get
+let r2'' = mkRat 3 4 |> Option.get
+let r3'' = mkRat 4 5 |> Option.get
+let r4'' = mkRat 5 6 |> Option.get
+let r5'' = mkRat 6 7 |> Option.get
+
+evalSM (calculate [(r2'', smPlus); (r3'', smMinus); (r4'', smMult); (r5'', smDiv)]) r1'' |> 
+  Option.get |> snd |> ratToString |> printfn "259 / 432 = %A"

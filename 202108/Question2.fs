@@ -1,47 +1,49 @@
 module _202108.Question2
 
-//Question 2.1
+let rec foo xs ys =
+  match xs, ys with
+  | [], ys -> ys
+  | xs, [] -> xs
+  | x :: xs, y :: ys when x < y ->
+    x :: (foo xs (y :: ys))
+  | x :: xs, y :: ys ->
+    y :: (foo (x :: xs) ys)
 
-let findClosestPerfectSquare x =
-    let rec aux index current= 
-        match index with
-        | index when ((x - index) * (x - index)) > ((x - current) * (x - current)) -> current
-        | _ ->
-            let square = sqrt index
-            match square with
-            | square when (square % 1.0 = 0.0) -> aux (index + 1.0) index
-            | _ -> aux (index + 1.0) current
-    aux 0 0
+let rec bar =
+  function
+  | [] -> []
+  | [x] -> [x]
+  | xs ->
+    let (a, b) = List.splitAt (List.length xs / 2) xs
+    foo (bar a) (bar b)
 
-let approxSquare (x:int) (num:int) : float =
-    let y = findClosestPerfectSquare x
-    let rec aux (r:float) =
-        function
-        | 0 -> r
-        | n ->  aux (((float x / r)+r) / 2.0) (n-1)
-    aux (sqrt y) num
-    
-    
-let quadratic (a:int) (b:int) (c:int) (num:int) =
-    let t = approxSquare ((b * b)-(4*a*c)) num
-    let reverseB = float -b
-    let bottom = 2.0 * float(a)
-    (((reverseB + t)/bottom),((reverseB - t)/bottom))
+//question 2.1
+//2.1.1 LOOK AT RIDER
+//2.1.2 It sorts the list by merging it
+//2.1.3 Bar = SplitAndSort Foo = Sort
+//2.1.4 a = leftSort b = rightSort
+
+//question 2.2
+// and makes the functions mutually recursive meaning you can fx. run function a and b recursively
+// It still works since foo does not need to run bar and foo is already defined when running bar
+
+let foo2 xs ys =
+  List.unfold (
+    fun state ->
+      match state with
+      | [], y::ys -> Some(y, ([], ys))
+      | x::xs, [] -> Some(x, (xs, []))
+      | x::xs, y::ys when x < y -> Some(x, (xs, y::ys))
+      | x::xs, y::ys -> Some(y, (x::xs, ys))
+      | _ -> None
+    ) (xs,ys)
 
 
-//3.3
-let parQuadratic (eqs : (int * int * int) list) (numProcesses:int) (num:int) : (float * float) list =
-    List.splitInto numProcesses eqs
-        |> List.map (
-            fun eqs ->
-                async {
-                    return List.fold (fun acc (a,b,c) -> acc@[(quadratic a b c num)]) List.empty eqs
-                }
-        )
-        |> Async.Parallel
-        |> Async.RunSynchronously
-        |> Array.fold (fun acc r -> acc@r) []
-
-//3.4
-open FParsecLight
-let solveQuadratic str
+let fooTail xs ys =
+  let rec aux f xs ys =
+    match xs, ys with
+    | [], ys -> f ys
+    | xs, [] -> f xs
+    | x :: xs, y :: ys when x < y -> aux (fun r -> f <| x::r) xs (y::ys)
+    | x :: xs, y :: ys -> aux (fun r -> f <| y::r) (x::xs) ys
+  aux id xs ys

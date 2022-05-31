@@ -7,8 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="FParsecLight.fsi" />
-    <Compile Include="FParsecLight.fs" />
+    <Compile Include="JParsec.fsi" />
+    <Compile Include="JParsec.fs" />
+    <Compile Include="Question4.fs" />
+    <Compile Include="Question3.fs" />
     <Compile Include="Question2.fs" />
     <Compile Include="Question1.fs" />
     <Compile Include="Program.fs" />
